@@ -463,10 +463,9 @@ python -m pytest tests/ --cov=omicsformer
 
 ## 📚 Documentation
 
-- **API Reference**: [docs/api.md](docs/api.md)
-- **Tutorials**: [docs/tutorials/](docs/tutorials/)
 - **Examples**: [examples/](examples/)
-- **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
+- **Package Documentation**: Available in docstrings and code comments
+- **Getting Started**: See the Quick Start section above
 
 ## 📄 Citation
 
