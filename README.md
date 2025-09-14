@@ -895,9 +895,9 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## 🙏 Acknowledgments
 
 - PyTorch team for the excellent deep learning framework
-- Hugging Face for transformer architecture inspirations  
+- Andrej Karpathy for teaching me transformer architecture
+- OpenAI & DeepSeek teams for transformer architecture innovations
 - The multi-omics research community for valuable feedback
-- Contributors and beta testers
 
 ## 📞 Support
 
