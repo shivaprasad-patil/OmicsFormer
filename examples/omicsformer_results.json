@@ -1,0 +1,159 @@
+{
+  "execution_info": {
+    "n_samples": 800,
+    "modalities": [
+      "genomics",
+      "transcriptomics",
+      "proteomics",
+      "metabolomics"
+    ],
+    "feature_dims": {
+      "genomics": 1000,
+      "transcriptomics": 500,
+      "proteomics": 200,
+      "metabolomics": 150
+    },
+    "training_enabled": true,
+    "quick_mode": false,
+    "device": "cpu",
+    "execution_time_minutes": 5.677203281720479
+  },
+  "model_info": {
+    "model_type": "AdvancedMultiOmicsTransformer",
+    "embed_dim": 256,
+    "num_heads": 8,
+    "num_layers": 4,
+    "num_experts": 4,
+    "use_moe": true,
+    "use_gqa": true
+  },
+  "training_results": {
+    "train_loss": [
+      1.1093475485956945,
+      1.1043513375659322,
+      1.1084658323332321,
+      1.1024579391923062,
+      1.1226781190827835,
+      1.100992267908052,
+      1.0950448402138644,
+      1.1002496966095858,
+      1.0916984912961027,
+      1.0933603048324585,
+      1.0751512688259746,
+      1.0573216468788857,
+      1.0570306265076925,
+      1.023561150528664,
+      0.985952636530233,
+      0.8565607937269433,
+      0.7672826959643253,
+      0.6922496286935584,
+      0.618471426326175,
+      0.5850390486939009
+    ],
+    "train_accuracy": [
+      0.3558823529411765,
+      0.3352941176470588,
+      0.3397058823529412,
+      0.3558823529411765,
+      0.38382352941176473,
+      0.35294117647058826,
+      0.4088235294117647,
+      0.38088235294117645,
+      0.3941176470588235,
+      0.38088235294117645,
+      0.40147058823529413,
+      0.47352941176470587,
+      0.4661764705882353,
+      0.47794117647058826,
+      0.5308823529411765,
+      0.5985294117647059,
+      0.6455882352941177,
+      0.6955882352941176,
+      0.7352941176470589,
+      0.7852941176470588
+    ],
+    "val_loss": [
+      1.0974727314572001,
+      1.0991503138874852,
+      1.1381951930911043,
+      1.0873035802397617,
+      1.1254140263380006,
+      1.0765838650769965,
+      1.0889756374580914,
+      1.0939475602881854,
+      1.082182485003804,
+      1.0749875709067944,
+      1.0531704786211946,
+      1.0526420335436977,
+      0.9793427101401395,
+      0.9492499052092086,
+      0.8430120972699897,
+      0.7600721217865167,
+      0.6491527494996093,
+      0.5517849409303,
+      0.42905812762504403,
+      0.6106402104677155
+    ],
+    "val_accuracy": [
+      0.3558823529411765,
+      0.325,
+      0.3029411764705882,
+      0.3985294117647059,
+      0.37058823529411766,
+      0.40441176470588236,
+      0.38382352941176473,
+      0.4073529411764706,
+      0.40147058823529413,
+      0.42058823529411765,
+      0.4485294117647059,
+      0.4470588235294118,
+      0.5426470588235294,
+      0.5588235294117647,
+      0.6,
+      0.6955882352941176,
+      0.7352941176470589,
+      0.7823529411764706,
+      0.8661764705882353,
+      0.7235294117647059
+    ]
+  },
+  "test_metrics": {
+    "accuracy": 0.7235294117647059,
+    "precision": 0.7526432527599799,
+    "recall": 0.7235294117647059,
+    "f1": 0.717518675246171
+  },
+  "analysis_summary": {
+    "attention_patterns_extracted": 0,
+    "embedding_types": [
+      "pooled"
+    ],
+    "correlation_matrix_shape": [
+      0,
+      0
+    ],
+    "feature_importance_modalities": [
+      "genomics",
+      "transcriptomics",
+      "proteomics",
+      "metabolomics"
+    ],
+    "pathway_enrichment_results": 4
+  },
+  "generated_files": [
+    "omicsformer_embeddings_pca.png",
+    "omicsformer_embeddings_tsne.png",
+    "omicsformer_embeddings_umap.png",
+    "omicsformer_feature_importance_genomics.png",
+    "omicsformer_feature_importance_transcriptomics.png",
+    "omicsformer_feature_importance_proteomics.png",
+    "omicsformer_feature_importance_metabolomics.png",
+    "omicsformer_pathways_genomics.png",
+    "omicsformer_pathways_transcriptomics.png",
+    "omicsformer_pathways_proteomics.png",
+    "omicsformer_pathways_metabolomics.png",
+    "omicsformer_distributions.png",
+    "training_history.png",
+    "omicsformer_comprehensive_report.html"
+  ]
+}
