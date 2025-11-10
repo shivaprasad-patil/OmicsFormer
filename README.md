@@ -13,7 +13,7 @@
 - **Flexible Alignment**: Handle samples with missing modalities (strict, flexible, intersection, union)
 - **Smart Preprocessing**: Automatic normalization, missing value imputation, quality control
 
-### 📊 Multi-Study Integration **NEW!**
+### 📊 Multi-Study Integration
 - **Combine Multiple Datasets**: Integrate 5+ transcriptomics studies from different sources
 - **Batch Effect Handling**: Technology differences (RNA-seq vs microarray), platform variations
 - **Two Integration Strategies**:
@@ -88,61 +88,83 @@ trainer = MultiOmicsTrainer(model=model, train_loader=train_loader, val_loader=v
 history = trainer.fit(num_epochs=20)
 ```
 
-### Multi-Study Integration Example
+### Real-World Example: SLE Multi-Study Integration
+
+**Complete Analysis Notebook**: [`SLE_MultiStudy_OmicsFormer_Analysis.ipynb`](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
+
+Integrating **8 independent SLE RNA-seq studies** (550 samples: 346 SLE, 204 controls) to discover disease biomarkers:
+
 ```python
-# Integrate multiple transcriptomics studies
-study_data = {
-    'TCGA_USA': tcga_expr_df,
-    'GEO_Europe': geo_expr_df,
-    'Japan_Cohort': japan_expr_df,
-    'UK_Biobank': uk_expr_df
-}
+from combat.pycombat import pycombat  # Batch effect correction
 
-# Approach 1: Each study as separate modality
+# Load 8 independent studies
+study_ids = ['SRP062966', 'SRP095109', 'SRP131775', 'SRP132939', 
+             'SRP136102', 'SRP155704', 'SRP168421', 'SRP178271']
+
+# 1. Feature selection: Top 2000 most variable genes
+gene_vars = combined_expr.var(axis=0)
+top_genes = gene_vars.nlargest(2000).index.tolist()
+
+# 2. ComBat batch correction (removes study-specific technical variation)
+expr_combat = pycombat(expr_matrix.T, batch_labels=study_indices)
+
+# 3. Train with corrected data + study indicators
+X_combined = np.hstack([expr_combat.T, study_onehot])
 dataset = FlexibleMultiOmicsDataset(
-    modality_data=study_data,
-    labels=combined_labels,
-    alignment='union',  # include all samples
-    normalize=True
+    modality_data={'combined': pd.DataFrame(X_combined)},
+    labels=disease_labels,
+    alignment='flexible'
 )
 
-# Approach 2: Combined with batch encoding
-combined_expr = pd.concat(list(study_data.values()))
-batch_indicators = pd.get_dummies(study_labels, prefix='batch')
-combined_with_batch = pd.concat([combined_expr, batch_indicators], axis=1)
-
-dataset = FlexibleMultiOmicsDataset(
-    modality_data={'transcriptomics': combined_with_batch},
-    labels=combined_labels,
-    alignment='strict',
-    normalize=True
+model = EnhancedMultiOmicsTransformer(
+    input_dims={'combined': 2008},  # 2000 genes + 8 study indicators
+    num_classes=2,
+    embed_dim=48,
+    num_heads=4,
+    num_layers=3,
+    dropout=0.35
 )
+```
 
-# See examples/quick_multi_study_demo.py for complete working example
+**Results:**
+- ✅ **90.91% test accuracy** (exceeds 90% goal!)
+- ✅ Batch effects reduced: PC1 variance 64.9% → 24.8%
+- ✅ Identified key SLE biomarkers: OAS2, TENM3, PIM2, KDELR1
+- ✅ F1 Score: 0.91, Control precision: 95%, SLE recall: 88%
+
+**Key Techniques:**
+- ComBat parametric batch correction
+- Feature selection (top 2000 variable genes)
+- Study indicator encoding
+- Gradient-based feature importance
+- Before/after batch effect visualization
+
+See the [complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow with visualizations!
 ```
 
 ## 📚 Examples
 
-All examples in `examples/` directory:
+### Real-World Application
+- **[SLE Multi-Study Integration Notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)** 🔬 - Complete analysis of 8 SLE RNA-seq studies (550 samples, 90.91% accuracy)
+  - ComBat batch correction
+  - Feature importance with real gene names
+  - Before/after batch effect visualization
+  - 2000 most variable genes selection
+  - Achieved >90% test accuracy with F1=0.91
 
 ### Getting Started
+All examples in `examples/` directory:
+
 - `quick_reference.py` - Basic usage and alignment strategies
 - `different_samples_test.py` - Handling samples with different modality coverage
-
-### Multi-Study Integration
-- **`quick_multi_study_demo.py`** ⚡ - Fast demo (30 seconds, 7 studies, 500 samples)
-- **`multi_study_transcriptomics_integration.py`** 🔬 - Full analysis with visualizations
-- See `examples/MULTI_STUDY_INTEGRATION_README.md` for detailed guide
-
-### Advanced Analysis
 - `analyzer_comprehensive_test.py` - Full analysis suite (15+ visualizations)
 - `alignment_strategies_demo.py` - Compare all alignment strategies
 - `comprehensive_alignment_test.py` - Edge cases and validation
 
 ### Quick Demo
 ```bash
-# Multi-study integration (recommended)
-python examples/quick_multi_study_demo.py
+# Basic usage
+python examples/quick_reference.py
 
 # Comprehensive analysis with visualizations
 python examples/analyzer_comprehensive_test.py
@@ -205,25 +227,38 @@ pathway_results = analyzer.analyze_pathway_enrichment(
 )
 ```
 
-## 📊 Multi-Study Integration Results
+## 📊 Real-World Results: SLE Multi-Study Integration
 
-From our lung cancer study integration example (7 studies, 500 samples, 3 subtypes):
+From the [SLE Multi-Study Analysis](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb):
 
-| Metric | Separate Modalities | Combined + Batch |
-|--------|-------------------|------------------|
-| **Test Accuracy** | 77.3% | 100.0% |
-| **Test F1** | 0.68 | 1.00 |
-| **Parameters** | 688,612 | 584,996 (15% fewer) |
-| **Training Speed** | Slower | Faster |
-| **Best For** | Strong batch effects | Similar technologies |
+**Dataset**: 8 independent SLE RNA-seq studies, 550 samples (346 SLE, 204 controls)
 
-**Key Findings:**
-- ✅ Successfully integrates datasets with different technologies (RNA-seq vs microarray)
-- ✅ Handles batch effects ranging from 0.1 to 0.8
-- ✅ Cross-study attention learns generalizable patterns
-- ✅ Batch encoding approach is more parameter efficient
+| Metric | Without ComBat | With ComBat |
+|--------|---------------|-------------|
+| **Test Accuracy** | 87.27% | **90.91%** ✅ |
+| **Test F1** | 0.85 | **0.91** |
+| **PC1 Variance** | 64.9% (batch) | 24.8% (biology) |
+| **Batch Effect** | High | **Removed** |
 
-See `examples/quick_multi_study_demo.py` for reproducible results.
+**Model Configuration:**
+- Parameters: 726,735
+- Architecture: 48 embed_dim, 4 heads, 3 layers, 0.35 dropout
+- Input: 2000 genes + 8 study indicators = 2008 features
+- Training: 51 epochs, early stopping, AdamW optimizer
+
+**Key Discoveries:**
+- ✅ Top biomarkers: OAS2 (known SLE gene!), TENM3, PIM2, KDELR1, ABI3
+- ✅ Confusion Matrix: TN=39, FP=2, FN=8, TP=61
+- ✅ Control precision: 95% (39/41), SLE recall: 88% (61/69)
+- ✅ ComBat reduced batch variance by 40.1%
+
+**Technical Highlights:**
+- ComBat parametric empirical Bayes batch correction
+- Gradient-based feature importance (shows actual gene names)
+- 4-panel before/after batch visualization
+- Study-wise PCA showing batch effect removal
+
+See the [complete analysis notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow!
 
 ## 📈 Visualization Gallery
 
@@ -277,22 +312,30 @@ omicsformer/
 
 examples/
 ├── quick_reference.py                    # Basic usage
-├── quick_multi_study_demo.py             # Multi-study integration (fast)
-├── multi_study_transcriptomics_integration.py  # Multi-study (full)
 ├── analyzer_comprehensive_test.py        # Complete analysis pipeline
-└── MULTI_STUDY_INTEGRATION_README.md     # Multi-study guide
+├── alignment_strategies_demo.py          # Alignment strategy comparison
+└── different_samples_test.py             # Handle missing modalities
+
+SLE_data/
+└── SLE_MultiStudy_OmicsFormer_Analysis.ipynb  # Real-world analysis notebook
 ```
 
 ## 🔬 Research Applications
 
-**Published Use Cases:**
+**Real-World Use Case:**
+- **SLE Multi-Study Integration**: 8 independent studies, 550 samples, 90.91% accuracy
+  - [Complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
+  - ComBat batch correction, feature importance, biomarker discovery
+
+**Capabilities:**
 - Cancer subtype classification (breast, lung, CLL)
+- Disease diagnosis and progression modeling
+- Autoimmune disease biomarker discovery (SLE, RA, IBD)
 - Drug response prediction
-- Disease progression modeling
 - Multi-center clinical trial integration
 - Cross-platform data harmonization
 
-**Capabilities:**
+**Scale:**
 - Handle 2-10 omics modalities simultaneously
 - Process datasets from 100 to 100,000+ samples
 - Integrate studies from different technologies
@@ -334,8 +377,8 @@ If you use OmicsFormer in your research, please cite:
 ## ⭐ Quick Links
 
 - [Installation Guide](#-quick-start)
+- [SLE Multi-Study Analysis (Real Example)](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
 - [Basic Tutorial](examples/quick_reference.py)
-- [Multi-Study Integration](examples/MULTI_STUDY_INTEGRATION_README.md)
 - [Comprehensive Analysis](examples/analyzer_comprehensive_test.py)
 - [Alignment Strategies](examples/alignment_strategies_demo.py)
 
