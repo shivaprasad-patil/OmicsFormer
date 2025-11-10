@@ -323,10 +323,10 @@ For questions, issues, or collaborations:
 If you use OmicsFormer in your research, please cite:
 
 ```bibtex
-@software{omicsformer2024,
+@software{omicsformer2025,
   title={OmicsFormer: Advanced Multi-Omics Integration with Transformers},
   author={Shivaprasad Patil},
-  year={2024},
+  year={2025},
   url={https://github.com/shivaprasad-patil/omicsformer}
 }
 ```
