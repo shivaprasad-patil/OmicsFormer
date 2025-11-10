@@ -90,7 +90,7 @@ history = trainer.fit(num_epochs=20)
 
 ### Real-World Example: SLE Multi-Study Integration
 
-**Complete Analysis Notebook**: [`SLE_MultiStudy_OmicsFormer_Analysis.ipynb`](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
+**Complete Analysis Notebook**: [`SLE_MultiStudy_OmicsFormer_Analysis.ipynb`](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
 
 Integrating **8 independent SLE RNA-seq studies** (550 samples: 346 SLE, 204 controls) to discover disease biomarkers:
 
@@ -139,13 +139,13 @@ model = EnhancedMultiOmicsTransformer(
 - Gradient-based feature importance
 - Before/after batch effect visualization
 
-See the [complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow with visualizations!
+See the [complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow with visualizations!
 ```
 
 ## 📚 Examples
 
 ### Real-World Application
-- **[SLE Multi-Study Integration Notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)** 🔬 - Complete analysis of 8 SLE RNA-seq studies (550 samples, 90.91% accuracy)
+- **[SLE Multi-Study Integration Notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)** 🔬 - Complete analysis of 8 SLE RNA-seq studies (550 samples, 90.91% accuracy)
   - ComBat batch correction
   - Feature importance with real gene names
   - Before/after batch effect visualization
@@ -229,7 +229,7 @@ pathway_results = analyzer.analyze_pathway_enrichment(
 
 ## 📊 Real-World Results: SLE Multi-Study Integration
 
-From the [SLE Multi-Study Analysis](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb):
+From the [SLE Multi-Study Analysis](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb):
 
 **Dataset**: 8 independent SLE RNA-seq studies, 550 samples (346 SLE, 204 controls)
 
@@ -258,7 +258,7 @@ From the [SLE Multi-Study Analysis](https://github.com/shivaprasad-patil/omicsfo
 - 4-panel before/after batch visualization
 - Study-wise PCA showing batch effect removal
 
-See the [complete analysis notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow!
+See the [complete analysis notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb) for full workflow!
 
 ## 📈 Visualization Gallery
 
@@ -311,20 +311,18 @@ omicsformer/
 └── utils/          # Helper functions, metrics, utilities
 
 examples/
-├── quick_reference.py                    # Basic usage
-├── analyzer_comprehensive_test.py        # Complete analysis pipeline
-├── alignment_strategies_demo.py          # Alignment strategy comparison
-└── different_samples_test.py             # Handle missing modalities
-
-SLE_data/
-└── SLE_MultiStudy_OmicsFormer_Analysis.ipynb  # Real-world analysis notebook
+├── SLE_MultiStudy_OmicsFormer_Analysis.ipynb  # Real-world SLE analysis (8 studies)
+├── quick_reference.py                         # Basic usage
+├── analyzer_comprehensive_test.py             # Complete analysis pipeline
+├── alignment_strategies_demo.py               # Alignment strategy comparison
+└── different_samples_test.py                  # Handle missing modalities
 ```
 
 ## 🔬 Research Applications
 
 **Real-World Use Case:**
 - **SLE Multi-Study Integration**: 8 independent studies, 550 samples, 90.91% accuracy
-  - [Complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
+  - [Complete notebook](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
   - ComBat batch correction, feature importance, biomarker discovery
 
 **Capabilities:**
@@ -377,7 +375,7 @@ If you use OmicsFormer in your research, please cite:
 ## ⭐ Quick Links
 
 - [Installation Guide](#-quick-start)
-- [SLE Multi-Study Analysis (Real Example)](https://github.com/shivaprasad-patil/omicsformer/blob/main/SLE_data/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
+- [SLE Multi-Study Analysis (Real Example)](https://github.com/shivaprasad-patil/omicsformer/blob/main/examples/SLE_MultiStudy_OmicsFormer_Analysis.ipynb)
 - [Basic Tutorial](examples/quick_reference.py)
 - [Comprehensive Analysis](examples/analyzer_comprehensive_test.py)
 - [Alignment Strategies](examples/alignment_strategies_demo.py)
