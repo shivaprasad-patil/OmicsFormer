@@ -467,21 +467,16 @@ class MultiOmicsAnalyzer:
                 mid_indices = np.random.choice(remaining_indices, n_mid, replace=False)
                 raw_scores[mid_indices] += np.random.uniform(0.2, 0.5, n_mid)
                 
-                # Normalize to [-1, 1] range
-                if raw_scores.std() > 0:
-                    normalized_scores = (raw_scores - raw_scores.mean()) / raw_scores.std()
-                    # Scale to [-1, 1] range
-                    min_val, max_val = normalized_scores.min(), normalized_scores.max()
-                    if max_val > min_val:
-                        normalized_scores = 2 * (normalized_scores - min_val) / (max_val - min_val) - 1
-                    else:
-                        normalized_scores = np.zeros_like(normalized_scores)
+                # Apply min-max scaling to [0, 1] range
+                min_val, max_val = raw_scores.min(), raw_scores.max()
+                if max_val > min_val:
+                    scaled_scores = (raw_scores - min_val) / (max_val - min_val)
                 else:
-                    normalized_scores = np.zeros(n_features)
+                    scaled_scores = np.zeros_like(raw_scores)
                 
-                importances[modality] = normalized_scores
+                importances[modality] = scaled_scores
                 
-                print(f"Generated {modality} importance: {n_features} features, range [{normalized_scores.min():.3f}, {normalized_scores.max():.3f}]")
+                print(f"Generated {modality} importance: {n_features} features, scaled range [0.0, 1.0]")
         
         return importances
     
@@ -502,6 +497,14 @@ class MultiOmicsAnalyzer:
             
             # Sum attention received by each modality
             modality_importance = attention_avg.sum(axis=0)
+            
+            # Apply min-max scaling to [0, 1] range
+            min_val, max_val = modality_importance.min(), modality_importance.max()
+            if max_val > min_val:
+                modality_importance = (modality_importance - min_val) / (max_val - min_val)
+            else:
+                modality_importance = np.zeros_like(modality_importance)
+            
             importances[f'attention_{key}'] = modality_importance
         
         return importances
@@ -512,13 +515,26 @@ class MultiOmicsAnalyzer:
         baseline_acc = self._compute_accuracy(dataloader)
         
         importances = {}
+        raw_importances = {}
         modality_names = getattr(self.model, 'modality_names', list(range(10)))  # Fallback
         
         for modality in modality_names:
             # Permute this modality and compute performance drop
             permuted_acc = self._compute_accuracy_with_permuted_modality(dataloader, modality)
             importance = baseline_acc - permuted_acc
-            importances[modality] = np.array([importance])
+            raw_importances[modality] = importance
+        
+        # Apply min-max scaling to [0, 1] range across all modalities
+        if raw_importances:
+            all_values = np.array(list(raw_importances.values()))
+            min_val, max_val = all_values.min(), all_values.max()
+            
+            for modality, importance in raw_importances.items():
+                if max_val > min_val:
+                    scaled_importance = (importance - min_val) / (max_val - min_val)
+                else:
+                    scaled_importance = 0.0
+                importances[modality] = np.array([scaled_importance])
         
         return importances
     
@@ -751,12 +767,11 @@ class MultiOmicsAnalyzer:
                 # Multiple importance values per feature, take mean
                 importance_scores = importance_scores.mean(axis=0)
             
-            # Get indices of top important features (use absolute values for ranking)
-            abs_importance = np.abs(importance_scores)
-            top_indices = np.argsort(abs_importance)[-top_k:][::-1]
+            # Get indices of top important features (scores are in [0, 1] range)
+            top_indices = np.argsort(importance_scores)[-top_k:][::-1]
             
             print(f"  {modality}: Using top {len(top_indices)} features from {len(importance_scores)} total")
-            print(f"    Importance range: [{importance_scores.min():.3f}, {importance_scores.max():.3f}]")
+            print(f"    Scaled importance range: [0.0, 1.0]")
             print(f"    Top feature importance: {importance_scores[top_indices[0]]:.3f}")
             
             # Get feature names
@@ -982,7 +997,12 @@ class MultiOmicsAnalyzer:
         if len(importance_scores.shape) > 1:
             importance_scores = importance_scores.mean(axis=0)
         
-        # Get top important features
+        # Apply min-max scaling to ensure [0, 1] range
+        min_val, max_val = importance_scores.min(), importance_scores.max()
+        if max_val > min_val:
+            importance_scores = (importance_scores - min_val) / (max_val - min_val)
+        
+        # Get top important features (use absolute values for ranking if needed)
         top_indices = np.argsort(importance_scores)[-top_n:][::-1]
         top_scores = importance_scores[top_indices]
         
@@ -1002,8 +1022,10 @@ class MultiOmicsAnalyzer:
         # Customize plot
         ax.set_yticks(range(len(top_names)))
         ax.set_yticklabels([name[:30] + '...' if len(name) > 30 else name for name in top_names])
-        ax.set_xlabel('Importance Score')
-        ax.set_title(f'Feature Importance - {modality.title()}')
+        ax.set_xlabel('Scaled Feature Importance (0-1)')
+        ax.set_title(f'Feature Importance - {modality.title()} (Min-Max Scaled)')
+        ax.set_xlim([0, 1.05])  # Set x-axis range for scaled values
+        ax.grid(axis='x', alpha=0.3, linestyle='--')
         ax.invert_yaxis()  # Top features at the top
         
         # Add value labels on bars

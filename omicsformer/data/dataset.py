@@ -360,9 +360,9 @@ def create_synthetic_multiomics_data(n_samples: int = 1000, n_features_per_modal
     if n_features_per_modality is None:
         n_features_per_modality = {
             'genomics': 1000,
-            'transcriptomics': 500,
-            'proteomics': 200,
-            'metabolomics': 150
+            'transcriptomics': 5000,
+            'proteomics': 2000,
+            'metabolomics': 1500
         }
     
     # Generate sample IDs

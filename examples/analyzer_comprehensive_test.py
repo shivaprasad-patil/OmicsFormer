@@ -997,7 +997,11 @@ if __name__ == "__main__":
     
     # Optional cleanup
     if success:
-        cleanup = input(f"\n🧹 Clean up generated files? (y/n): ").lower().strip()
+        try:
+            cleanup = input(f"\n🧹 Clean up generated files? (y/n): ").lower().strip()
+        except (EOFError, KeyboardInterrupt):
+            cleanup = 'n'
+        
         if cleanup == 'y':
             import glob
             patterns = ['omicsformer_*.png', 'omicsformer_*.html', 'omicsformer_*.json', '*.pth', 'training_*.png']
