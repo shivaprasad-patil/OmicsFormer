@@ -6,6 +6,8 @@
 
 Deep learning framework for integrating multi-omics data using transformer architectures. Handles multiple modalities, missing data, and batch effects for disease classification and biomarker discovery.
 
+![OmicsFormer Overview](omicsformer_figure.png)
+
 ## Key Features
 
 - **Multi-Modal Integration**: Genomics, transcriptomics, proteomics, metabolomics
