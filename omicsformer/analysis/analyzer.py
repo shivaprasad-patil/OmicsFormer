@@ -421,62 +421,81 @@ class MultiOmicsAnalyzer:
         return feature_importances
     
     def _gradient_based_importance(self, dataloader, target_class: Optional[int] = None) -> Dict[str, np.ndarray]:
-        """Compute gradient-based feature importance."""
-        # Since we're using a mock model, let's generate realistic feature importance scores
-        # based on the actual feature dimensions from the model
+        """
+        Compute gradient-based feature importance using input gradients.
+        
+        Args:
+            dataloader: DataLoader with samples to analyze
+            target_class: Target class for importance analysis (None for predicted class)
+            
+        Returns:
+            Dictionary with feature importance scores per modality (scaled to [0, 1])
+        """
+        self.model.eval()
+        self.model.zero_grad()
         
         importances = {}
-        modality_names = ['genomics', 'transcriptomics', 'proteomics', 'metabolomics']
+        modality_importance_values = {}
         
-        # Get feature dimensions from the model if available
-        feature_dims = {}
-        if hasattr(self.model, 'input_dims'):
-            feature_dims = self.model.input_dims
-        elif hasattr(self.model, 'config') and 'input_dims' in self.model.config:
-            feature_dims = self.model.config['input_dims']
-        else:
-            # Default dimensions matching our test data
-            feature_dims = {
-                'genomics': 1000,
-                'transcriptomics': 2000, 
-                'proteomics': 500,
-                'metabolomics': 300
-            }
+        # Collect gradients across all batches
+        for batch in dataloader:
+            # Move batch to device
+            batch_device = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v 
+                           for k, v in batch.items()}
+            
+            # Process each modality
+            for modality_name, modality_data in batch_device.items():
+                if modality_name == 'label' or not isinstance(modality_data, torch.Tensor):
+                    continue
+                
+                # Enable gradient tracking for this modality
+                modality_data.requires_grad = True
+                batch_device[modality_name] = modality_data
+                
+                # Forward pass
+                logits = self.model(batch_device)
+                
+                # Get predictions or use target class
+                if target_class is not None:
+                    preds = torch.full((len(logits),), target_class, dtype=torch.long, device=self.device)
+                else:
+                    preds = torch.argmax(logits, dim=1)
+                
+                # Compute gradient of prediction with respect to input
+                for i in range(len(preds)):
+                    if logits[i, preds[i]].requires_grad:
+                        logits[i, preds[i]].backward(retain_graph=True)
+                        
+                        if modality_data.grad is not None:
+                            # Take absolute value of gradients
+                            importance = torch.abs(modality_data.grad[i]).detach().cpu().numpy()
+                            
+                            if modality_name not in modality_importance_values:
+                                modality_importance_values[modality_name] = []
+                            modality_importance_values[modality_name].append(importance)
+                            
+                            # Zero gradients for next iteration
+                            modality_data.grad.zero_()
+                
+                # Disable gradient tracking
+                modality_data.requires_grad = False
         
-        # Generate realistic importance scores for each modality
-        np.random.seed(42)  # For reproducible results
-        
-        for modality in modality_names:
-            if modality in feature_dims:
-                n_features = feature_dims[modality]
-                
-                # Create realistic importance scores with biological interpretation
-                # Some features highly important, most moderately important, some low
-                
-                # Start with random normal distribution
-                raw_scores = np.random.normal(0, 0.3, n_features)
-                
-                # Add some highly important features (top 5%)
-                n_top = max(1, int(0.05 * n_features))
-                top_indices = np.random.choice(n_features, n_top, replace=False)
-                raw_scores[top_indices] += np.random.uniform(0.5, 1.0, n_top)
-                
-                # Add some moderately important features (next 15%)
-                n_mid = max(1, int(0.15 * n_features))
-                remaining_indices = np.setdiff1d(np.arange(n_features), top_indices)
-                mid_indices = np.random.choice(remaining_indices, n_mid, replace=False)
-                raw_scores[mid_indices] += np.random.uniform(0.2, 0.5, n_mid)
+        # Average importance across all samples and apply min-max scaling
+        for modality_name, importance_list in modality_importance_values.items():
+            if len(importance_list) > 0:
+                # Average across samples
+                mean_importance = np.mean(importance_list, axis=0)
                 
                 # Apply min-max scaling to [0, 1] range
-                min_val, max_val = raw_scores.min(), raw_scores.max()
+                min_val, max_val = mean_importance.min(), mean_importance.max()
                 if max_val > min_val:
-                    scaled_scores = (raw_scores - min_val) / (max_val - min_val)
+                    scaled_importance = (mean_importance - min_val) / (max_val - min_val)
                 else:
-                    scaled_scores = np.zeros_like(raw_scores)
+                    scaled_importance = np.zeros_like(mean_importance)
                 
-                importances[modality] = scaled_scores
+                importances[modality_name] = scaled_importance
                 
-                print(f"Generated {modality} importance: {n_features} features, scaled range [0.0, 1.0]")
+                print(f"Computed {modality_name} importance: {len(scaled_importance)} features, scaled range [0.0, 1.0]")
         
         return importances
     
